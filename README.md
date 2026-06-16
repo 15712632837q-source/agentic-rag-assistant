@@ -2,6 +2,9 @@
 
 对**任意 markdown 知识库**做"会自主检索"的问答助手：agent 自己判断**要不要查、查什么、够不够再答**，并给出**出处引用**——不是每问必检索一次的朴素 RAG。
 
+> 🔗 **在线 Demo**：_部署后填入 URL_（Streamlit Community Cloud，语料为 `sample_docs/` 公开示例）
+> 🌐 **本地网页**：`streamlit run streamlit_app.py`
+
 > Demo 语料用的是作者自建的个人知识库「第二大脑」(42 篇笔记)，但换成任意 markdown 目录即可复用（改 `CORPUS_DIR` 一个变量）。
 
 ## 一张图看懂
