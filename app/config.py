@@ -34,7 +34,7 @@ EMBED_MODEL = os.getenv("EMBED_MODEL") or (
     str(_LOCAL_EMBED) if _LOCAL_EMBED.exists() else "BAAI/bge-small-zh-v1.5")
 
 CORPUS_DIR = os.getenv("CORPUS_DIR", r"D:\项目\第二大脑")
-STORAGE_DIR = str(ROOT / "storage")
+STORAGE_DIR = os.getenv("STORAGE_DIR", str(ROOT / "storage"))
 
 _configured = False
 
