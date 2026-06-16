@@ -1,6 +1,6 @@
 # Agentic RAG Assistant
 
-对**任意 markdown 知识库**做"会自主检索"的问答助手：agent 自己判断**要不要查、查什么、够不够再答**，并给出**出处引用**——不是每问必检索一次的朴素 RAG。
+对**任意 markdown 知识库**做"会自主检索"的问答助手：agent 自己判断**要不要查、查什么、够不够再答**，并给出**出处引用**——不是每问必检索一次的朴素 RAG。还带**长期记忆**：你告诉它的事实/偏好会被记住，跨会话也能回忆（语义检索 + 时间衰减）。
 
 > 🔗 **在线 Demo**：https://agentic-rag-assistant-uylcdzgzoowxuxmlvhu3kq.streamlit.app
 > （Streamlit Community Cloud · 语料为 `sample_docs/` 公开示例 · 首次加载约 1-2 分钟）
@@ -13,12 +13,11 @@
 ```
 用户提问
    ↓
-ReActAgent (思考→行动→观察循环)
-   ├─ 决定是否调用 knowledge_base 工具
-   │     ↓
-   │  VectorStoreIndex 检索 (本地 bge-zh embedding, top-k)
-   │     ↓ 命中片段 + 出处
-   └─ 综合检索结果作答（带引用）→ 用户
+ReActAgent (思考→行动→观察循环，自主选用以下工具)
+   ├─ knowledge_base  → VectorStoreIndex 检索 (本地 bge-zh, top-k) → 片段+出处
+   ├─ remember        → 把事实/偏好写入长期记忆 (SQLite + 向量)
+   ├─ recall          → 语义×时间衰减 检索长期记忆
+   └─ 综合作答（带引用）→ 用户
 LLM = 豆包 / 火山方舟 (OpenAI 兼容，引擎可换)
 ```
 
@@ -47,10 +46,11 @@ docker build -t agentic-rag . && docker run -p 8000:8000 --env-file .env agentic
 ```
 
 ## 技术栈
-- **检索/索引**：LlamaIndex（`VectorStoreIndex` + `ReActAgent`）
+- **检索/编排**：LlamaIndex（`VectorStoreIndex` + workflow `ReActAgent`）
 - **生成**：豆包 / 火山方舟（OpenAI 兼容，`OpenAILike`，可换任意兼容端点）
-- **向量化**：本地 `bge-small-zh`（fastembed / ONNX，离线、对中文友好）
-- **服务**：FastAPI + Uvicorn + Docker
+- **向量化**：本地 `bge-small-zh`（中文友好；本地预下载离线加载，云端按需下载）
+- **长期记忆**：SQLite 存事实/偏好 + 复用同一 embedding 做「语义相关性 × 时间衰减」检索（`app/memory.py`）
+- **服务/界面**：FastAPI（HTTP）+ Streamlit（网页）+ Docker
 
 ## 效果指标（实测）
 | 指标 | 数值 | 来源 |

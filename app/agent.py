@@ -30,16 +30,26 @@ def build_agent(verbose: bool = True):
     """
     from llama_index.core import Settings
     from llama_index.core.agent.workflow import ReActAgent
-    from llama_index.core.tools import QueryEngineTool
+    from llama_index.core.tools import FunctionTool, QueryEngineTool
+
+    from . import memory
 
     index = _load_or_build_index()
     query_engine = index.as_query_engine(similarity_top_k=4)
-    tool = QueryEngineTool.from_defaults(
+    kb_tool = QueryEngineTool.from_defaults(
         query_engine=query_engine,
         name="knowledge_base",
         description=(
-            "检索用户的个人知识库（第二大脑），回答关于其中笔记、资料、知识点的问题。"
+            "检索知识库文档，回答关于其中笔记、资料、知识点的问题。"
             "输入应是一个具体、自包含的问题。"
         ),
     )
-    return ReActAgent(tools=[tool], llm=Settings.llm)
+    remember_tool = FunctionTool.from_defaults(
+        fn=memory.remember, name="remember",
+        description="把用户明确要你记住的、值得长期保留的事实或偏好存入长期记忆。输入一句要记住的话。",
+    )
+    recall_tool = FunctionTool.from_defaults(
+        fn=memory.recall, name="recall",
+        description="回答前，从长期记忆里检索与当前问题/用户相关的、之前记住过的事实或偏好。输入一个查询短语。",
+    )
+    return ReActAgent(tools=[kb_tool, remember_tool, recall_tool], llm=Settings.llm)

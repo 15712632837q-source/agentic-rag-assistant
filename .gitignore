@@ -1,6 +1,8 @@
 .venv/
 storage/
+storage_sample/
 models/
+memory.db
 .env
 __pycache__/
 *.pyc
