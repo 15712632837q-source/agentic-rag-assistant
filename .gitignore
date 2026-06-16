@@ -1,0 +1,7 @@
+.venv/
+storage/
+models/
+.env
+__pycache__/
+*.pyc
+.fastembed_cache/
