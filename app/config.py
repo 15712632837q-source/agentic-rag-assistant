@@ -19,8 +19,11 @@ for _v in ("HTTP_PROXY", "HTTPS_PROXY", "http_proxy", "https_proxy",
            "ALL_PROXY", "all_proxy"):
     os.environ.pop(_v, None)
 
-# 国内访问 HuggingFace 受限 → 默认走镜像下载本地 embedding 模型（直连可达，无需代理）
-os.environ.setdefault("HF_ENDPOINT", "https://hf-mirror.com")
+# 注意：不在这里强制 HF 镜像。
+# - 本地（国内）：用 scripts/download_embed_model.py 预下载到 models/，运行时离线加载，
+#   不联网，所以 config 不需要设镜像；若确需镜像，本地运行前自行 export HF_ENDPOINT。
+# - 云端（海外，如 Streamlit Cloud）：models/ 不存在，按 HF 仓库名直连官方 huggingface.co
+#   下载——这时若强制走国内镜像反而会连不上（实测 Streamlit Cloud OSError 根因）。
 
 ARK_API_KEY = os.getenv("ARK_API_KEY", "")
 ARK_BASE_URL = os.getenv("ARK_BASE_URL", "https://ark.cn-beijing.volces.com/api/v3")
