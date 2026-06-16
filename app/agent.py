@@ -32,7 +32,7 @@ def build_agent(verbose: bool = True):
     from llama_index.core.agent.workflow import ReActAgent
     from llama_index.core.tools import FunctionTool, QueryEngineTool
 
-    from . import memory
+    from . import memory, skills
 
     index = _load_or_build_index()
     query_engine = index.as_query_engine(similarity_top_k=4)
@@ -52,4 +52,16 @@ def build_agent(verbose: bool = True):
         fn=memory.recall, name="recall",
         description="回答前，从长期记忆里检索与当前问题/用户相关的、之前记住过的事实或偏好。输入一个查询短语。",
     )
-    return ReActAgent(tools=[kb_tool, remember_tool, recall_tool], llm=Settings.llm)
+    list_skills_tool = FunctionTool.from_defaults(
+        fn=skills.list_skills, name="list_skills",
+        description="列出可用技能（技能=有固定流程/格式的做事手册，如概念对比、学习计划、要点速记）。"
+                    "遇到这类任务时，先用它看有没有匹配的技能。",
+    )
+    load_skill_tool = FunctionTool.from_defaults(
+        fn=skills.load_skill, name="load_skill",
+        description="按名称加载一个技能的完整流程说明；加载后必须严格按它给的步骤和输出格式来完成任务。",
+    )
+    return ReActAgent(
+        tools=[kb_tool, remember_tool, recall_tool, list_skills_tool, load_skill_tool],
+        llm=Settings.llm,
+    )

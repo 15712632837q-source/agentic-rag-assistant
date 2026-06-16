@@ -37,6 +37,19 @@
   所以能直接复用现成基建。
 - **边界**：SQLite 文件本地持久；Streamlit Cloud 文件系统易失，记忆在重启前有效（demo 够用）。
 
+## 7. 技能（Skills）：markdown 手册 + 按需加载，不写死在 prompt 里
+参考《从零搭建 AI-Agent 的 10 个模块》的 Skills。让 agent 能按【固定流程/格式】做事
+（如概念对比、学习计划、要点速记），而不是每次自由发挥：
+- **技能 = `skills/` 下的 markdown**（frontmatter 写 name/description，正文写流程/模板）。
+  **新增技能 = 加一个 .md，零改代码**——用户可自建、也可装"社区技能"。
+- **按需加载省 token**：`list_skills` 只把所有技能的【名称+描述】给模型；模型判断匹配后，
+  再用 `load_skill(名称)` 取完整流程。技能很多时也不会撑爆上下文。
+- **接法**：`list_skills` / `load_skill` 两个 FunctionTool，与 knowledge_base / 记忆工具并列，
+  由 ReActAgent 自主调用。技能正文里要求"用 knowledge_base 取内容 + 按模板输出"，
+  于是技能、检索、作答串成一条：加载技能→检索→按格式答（实测概念对比技能输出严格套模板）。
+- **为什么不做成代码里的"模式"**：写成 markdown 才能让非程序员改/加技能，也对应笔记里的
+  "skill creator + 社区技能"理念。
+
 ## 待办 / 可扩展
 - groundedness / 检索命中率的自动评测（接另一个评测框架项目）
 - 重排（rerank）提升 top-k 质量
